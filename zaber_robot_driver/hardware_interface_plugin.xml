@@ -1,0 +1,9 @@
+<library path="zaber_driver_plugin">
+  <class name="zaber_driver/ZaberSystemHardwareInterface"
+         type="zaber_driver::ZaberSystemHardwareInterface"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+		ROS2 Control System Driver for the Zaber motion controllers.
+    </description>
+  </class>
+</library>

@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="zaber_robot" params="name">
+
+    <link name="base_link"/>
+
+    <link name="y_link">
+     <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_lmh_y.stl"/> 
+       </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_lmh_y.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <link name="x_link">
+     <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_lmh_x.stl"/> 
+       </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_lmh_x.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <link name="z_link">
+     <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_vsr_z.stl"/> 
+       </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+	  <mesh filename="package://zaber_description/meshes/zaber_vsr_z.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="insertion_joint" type="prismatic">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="y_link"/>
+      <axis xyz="0.0 1.0 0.0"/>
+      <limit upper="0.1" lower="0.0" effort="100" velocity="100"/>
+    </joint>
+    
+    <joint name="horizontal_joint" type="prismatic">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="x_link"/>
+      <axis xyz="1.0 0.0 0.0"/>
+      <limit upper="0.03" lower="-0.03" effort="100" velocity="100"/>
+    </joint>
+    
+    <joint name="vertical_joint" type="prismatic">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="x_link"/>
+      <child link="z_link"/>
+      <axis xyz="0.0 0.0 1.0"/>
+      <limit upper="0.05" lower="0.0" effort="100" velocity="100"/>
+    </joint>
+    
+  </xacro:macro>
+  
+</robot>

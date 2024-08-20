@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+
+  <xacro:include filename="$(find zaber_description)/urdf/zaber_macro.xacro"/>
+  <xacro:include filename="$(find zaber_description)/urdf/zaber.ros2_control.xacro"/>
+
+   <!-- create link fixed to the "world" -->
+   <link name="world" />
+
+   <xacro:zaber_robot name="$(arg name)">
+   </xacro:zaber_robot>
+   <xacro:zaber_ros2_control name="$(arg name)"/>
+
+   <joint name="base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link" />
+  </joint>
+  
+</robot>
