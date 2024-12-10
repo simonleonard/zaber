@@ -25,6 +25,9 @@ namespace zaber_driver{
     Axis& operator=(const Axis&) = delete;
     
     const std::string& name() const { return name_; }
+
+    zaber::motion::ascii::Warnings getWarnings();
+
     double getPosition(); 
    
     void moveAbs(double position, double velocity, double accel);
@@ -41,6 +44,9 @@ namespace zaber_driver{
     }
     
     double position_;
+
+    constexpr static double kDefaultVel = 0.0025;   /* mm / s */
+    constexpr static double kDefaultAccel = 0.005;  /* mm / s^2 */
     
   private:
     bool withinRange(double position) const;
@@ -51,8 +57,9 @@ namespace zaber_driver{
     double upper_limit_;
     zaber::motion::ascii::Axis axis_;
 
-    constexpr static double kDefaultVel = 2.5;   /* mm / s */
-    constexpr static double kDefaultAccel = 0.5; /* mm / s^2 */
+    constexpr static zaber::motion::Units kLenUnitM = zaber::motion::Units::LENGTH_METRES;
+    constexpr static zaber::motion::Units kVelUnitMPS = zaber::motion::Units::VELOCITY_METRES_PER_SECOND;
+    constexpr static zaber::motion::Units kAccelUnitMPS2 = zaber::motion::Units::ACCELERATION_METRES_PER_SECOND_SQUARED;
 
     constexpr static zaber::motion::Units kLenUnitMM = zaber::motion::Units::LENGTH_MILLIMETRES;
     constexpr static zaber::motion::Units kVelUnitMMPS = zaber::motion::Units::VELOCITY_MILLIMETRES_PER_SECOND;
@@ -94,22 +101,23 @@ namespace zaber_driver{
     std::vector<double> hw_states_position_;
     std::vector<double> hw_commands_position_;
     std::vector<double> hw_commands_velocity_;
+    int cmd_mode_;
 
     zaber::motion::ascii::Connection connection_;
     std::vector<zaber::motion::ascii::Device> devices_;
     std::unordered_map<std::string, Axis> axes_;
 
-    constexpr static double kTxHome = 0.0;
-    constexpr static double kTxLowerLimit = 6.5;
-    constexpr static double kTxUpperLimit = 16.5;
+    constexpr static double kTxHome = 0.0;//125;
+    constexpr static double kTxLowerLimit = 0.00;
+    constexpr static double kTxUpperLimit = 0.025;
 
     constexpr static double kLsHome = 0.0;
-    constexpr static double kLsLowerLimit = 20.0;
-    constexpr static double kLsUpperLimit = 120.0;
+    constexpr static double kLsLowerLimit = 0.0;
+    constexpr static double kLsUpperLimit = 0.1;
     
     constexpr static double kTzHome = 0.0;
-    constexpr static double kTzLowerLimit = 4.0;
-    constexpr static double kTzUpperLimit = 14.0;
+    constexpr static double kTzLowerLimit = 0.00;
+    constexpr static double kTzUpperLimit = 0.01;
 
   };
 }

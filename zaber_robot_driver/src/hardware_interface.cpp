@@ -20,29 +20,30 @@ namespace zaber_driver {
     RCLCPP_INFO(rclcpp::get_logger("Axis"), " %s: [ '%f', '%f' ]", name.c_str(), lower_limit_ - home_, upper_limit_ - home_ );
   }
   
+  zaber::motion::ascii::Warnings Axis::getWarnings(){
+    return axis_.getWarnings();
+  }
+
   double Axis::getPosition(){
-    zaber::motion::ascii::Warnings warning = axis_.getWarnings();
-    //for(auto w : warning.getFlags())
-    //std::cout << w << std::endl;
-    return axis_.getPosition(kLenUnitMM) - home_;
+    return axis_.getPosition(kLenUnitM) - home_;
   }
   
   void Axis::moveAbs(double position, double velocity, double accel) {
     if (!busy() && withinRange(position))                                                                     
-      axis_.moveAbsolute((position + home_), kLenUnitMM, false, velocity, kVelUnitMMPS, accel, kAccelUnitMMPS2);
+      axis_.moveAbsolute((position + home_), kLenUnitM, false, velocity, kVelUnitMPS, accel, kAccelUnitMPS2);
   }
   void Axis::moveRel(double distance, double velocity, double accel) {
     if (!busy() && withinRange(distance + getPosition()))
-      axis_.moveRelative(distance, kLenUnitMM, false, velocity, kVelUnitMMPS);
+      axis_.moveRelative(distance, kLenUnitM, false, velocity, kVelUnitMPS);
   }
 
   void Axis::sendVel(double vel){
-    axis_.moveVelocity(vel, kVelUnitMMPS, 10, kAccelUnitMMPS2);
+    axis_.moveVelocity(vel, kVelUnitMMPS, 10, kAccelUnitMPS2);
   }
 
   void Axis::home(bool wait_until_idle) {
-    //axis_.moveAbsolute(home_, kLenUnitMM, wait_until_idle, kDefaultVel, kVelUnitMMPS, kDefaultAccel, kAccelUnitMMPS2);
-    axis_.home(wait_until_idle);
+    axis_.moveAbsolute(home_, kLenUnitM, wait_until_idle, kDefaultVel, kVelUnitMPS, kDefaultAccel, kAccelUnitMPS2);
+    //axis_.home(wait_until_idle);
   }
   
   void Axis::stop() {
@@ -52,9 +53,14 @@ namespace zaber_driver {
   bool Axis::withinRange(double position) const {
     if (lower_limit_ <= position + home_ && position + home_ <= upper_limit_)
       return true;
-    RCLCPP_INFO(rclcpp::get_logger("Axis"), "position '%f' is out of range: ['%f', '%f']",
-		position, lower_limit_ - home_, upper_limit_ - home_);
-    return false;
+    else{
+      RCLCPP_INFO(rclcpp::get_logger("Axis"),
+		  "position '%f' is out of range: ['%f', '%f']",
+		  position,
+		  lower_limit_ - home_,
+		  upper_limit_ - home_);
+      return false;
+    }
   }
   
   bool Axis::busy() {
@@ -69,6 +75,8 @@ namespace zaber_driver {
   hardware_interface::CallbackReturn
   ZaberSystemHardwareInterface::on_init
   (const hardware_interface::HardwareInfo& info){
+    
+    cmd_mode_ = 0;
     
     if( hardware_interface::SystemInterface::on_init(info) !=
 	hardware_interface::CallbackReturn::SUCCESS ){
@@ -88,7 +96,7 @@ namespace zaber_driver {
     if (devices_.size() != 3) return hardware_interface::CallbackReturn::ERROR;
     
     hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-    hw_commands_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_commands_position_.resize(info_.joints.size(), 0.0);
     hw_commands_velocity_.resize(info_.joints.size(), 0.0);
 
     for (const hardware_interface::ComponentInfo & joint : info_.joints){
@@ -194,9 +202,11 @@ namespace zaber_driver {
       std::cout << "start: " << key << std::endl;
       for (auto i = 0u; i < info_.joints.size(); i++) {
 	if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION) {
+	  cmd_mode_ = 1;
 	  hw_commands_velocity_[i] = 0.0;
 	}
 	if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_VELOCITY) {
+	  cmd_mode_ = 2;
 	  hw_commands_velocity_[i] = 0.0;
 	}
       }
@@ -254,6 +264,11 @@ namespace zaber_driver {
 								      const rclcpp::Duration& /*period*/){
     for(std::size_t i=0; i<info_.joints.size(); i++ ){
       hw_states_position_[i] = axes_.at(info_.joints[i].name).getPosition();
+
+      zaber::motion::ascii::Warnings warnings = axes_.at(info_.joints[i].name).getWarnings();
+      for( auto w=warnings.getFlags().begin(); w!=warnings.getFlags().end(); w++ )
+	std::cout << *w << std::endl;
+      
     }
     return hardware_interface::return_type::OK;
   }
@@ -261,8 +276,12 @@ namespace zaber_driver {
   hardware_interface::return_type ZaberSystemHardwareInterface::write(const rclcpp::Time& /*time*/,
 								      const rclcpp::Duration& /*period*/){
     for( std::size_t i=0; i<info_.joints.size(); i++ ){
-      axes_.at(info_.joints[i].name).sendVel(hw_commands_velocity_[i]);
+      if( cmd_mode_ == 1 )
+	axes_.at(info_.joints[i].name).moveAbs(hw_commands_position_[i], Axis::kDefaultVel, Axis::kDefaultAccel );
+      if( cmd_mode_ == 2 )
+	axes_.at(info_.joints[i].name).sendVel(hw_commands_velocity_[i]);
     }
+
     return hardware_interface::return_type::OK;
   }
 

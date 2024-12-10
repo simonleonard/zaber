@@ -186,47 +186,18 @@ def generate_launch_description():
 
     controllers_active = [
         "joint_state_broadcaster",
-        "velocity_controller",
+        "spacenav_controller",
     ]
-    controllers_inactive = ["position_controller", "broyden_controller", "spacenav_controller"]
+    controllers_inactive = ["position_controller", "broyden_controller", "velocity_controller"]
 
     controller_spawners = [controller_spawner(controllers_active)] + [
         controller_spawner(controllers_inactive, active=False)
     ]
 
-    initial_joint_controller_spawner_started = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            initial_joint_controller,
-            "-c",
-            "/controller_manager",
-            "--controller-manager-timeout",
-            controller_spawner_timeout,
-        ],
-        condition=IfCondition(activate_joint_controller),
-    )
-
-    initial_joint_controller_spawner_stopped = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            initial_joint_controller,
-            "-c",
-            "/controller_manager",
-            "--controller-manager-timeout",
-            controller_spawner_timeout,
-            "--inactive",
-        ],
-        condition=UnlessCondition(activate_joint_controller),
-    )
-    
     nodes_to_start = [
         control_node,        
         robot_state_publisher_node,
-        #rviz_node,
-        #initial_joint_controller_spawner_started,
-        #initial_joint_controller_spawner_stopped,
+        rviz_node,
     ] + controller_spawners
 
     return LaunchDescription(declared_arguments + nodes_to_start)
