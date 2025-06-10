@@ -1,3 +1,4 @@
+
 # Copyright (c) 2021 PickNik, Inc.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,6 +49,14 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            "runtime_config_package",
+            default_value="zaber_robot_driver",
+            description='Package with the controller\'s configuration in "config" folder. '
+            "Usually the argument is not set, it enables use of a custom setup.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             "description_file",
             default_value="zaber.urdf.xacro",
             description="URDF/XACRO description file with the robot.",
@@ -63,11 +72,30 @@ def generate_launch_description():
         )
     )
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_ros2_control",
+            default_value='false',
+            description="Enable ROS2 control tags"
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "com_port",
+            default_value='/dev/ttyUSB0',
+            description="COM port"
+        )
+    )
+
     # General arguments
     description_package = LaunchConfiguration("description_package")
+    runtime_package = LaunchConfiguration("runtime_package")
     description_file = LaunchConfiguration("description_file")
     tf_prefix = LaunchConfiguration("tf_prefix")
-
+    use_ros2_control = LaunchConfiguration("use_ros2_control")
+    com_port = LaunchConfiguration("com_port")
+    
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
@@ -78,9 +106,20 @@ def generate_launch_description():
             " ",
             "tf_prefix:=",
             tf_prefix,
+            " ",
+            "use_ros2_control:=",
+            use_ros2_control,
+            " ",
+            "com_port:=",
+            com_port,
+            " ",
         ]
     )
     robot_description = {"robot_description": robot_description_content}
+
+    aurora_controllers = PathJoinSubstitution(
+        [FindPackageShare(runtime_config_package), "config", controllers_file]
+    )
 
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare(description_package), "rviz", "view_robot.rviz"]

@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
 
+  <xacro:arg name="name" default="jhu"/>
+  <xacro:arg name="use_ros2_control" default="true"/>
+  <xacro:arg name="com_port" default="/dev/ttyUSB0"/>
+  
   <xacro:include filename="$(find zaber_description)/urdf/zaber_macro.xacro"/>
   <xacro:include filename="$(find zaber_description)/urdf/zaber.ros2_control.xacro"/>
 
@@ -9,8 +13,11 @@
 
    <xacro:zaber_robot name="$(arg name)">
    </xacro:zaber_robot>
-   <xacro:zaber_ros2_control name="$(arg name)"/>
 
+   <xacro:if value="$(arg use_ros2_control)">
+     <xacro:zaber_ros2_control name="$(arg name)" prefix="" com_port="$(arg com_port)"/>
+   </xacro:if>
+       
    <joint name="base_joint" type="fixed">
     <parent link="world"/>
     <child link="base_link" />
