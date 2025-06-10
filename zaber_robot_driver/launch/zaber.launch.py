@@ -106,6 +106,20 @@ def generate_launch_description():
             default_value="velocity_controller",
             description="Initially loaded robot controller.",
         )
+    )    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "com_port",
+            default_value="/dev/ttyUSB0",
+            description="Serial port.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "name",
+            default_value="name",
+            description="Robot name.",
+        )
     )
     
     # General arguments
@@ -118,7 +132,9 @@ def generate_launch_description():
     tf_prefix = LaunchConfiguration("tf_prefix")
 
     use_fake_hardware = LaunchConfiguration("use_fake_hardware")
-
+    com_port = LaunchConfiguration("com_port")
+    name = LaunchConfiguration("name")
+    
     activate_joint_controller = LaunchConfiguration("activate_joint_controller")
     controller_spawner_timeout = LaunchConfiguration("controller_spawner_timeout")
     initial_joint_controller = LaunchConfiguration("initial_joint_controller")
@@ -129,10 +145,15 @@ def generate_launch_description():
             " ",
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
             " ",
-            "name:=zaber",
+            "name:=",
+            name,
             " ",
             "tf_prefix:=",
             tf_prefix,
+            " ",
+            "com_port:=",
+            com_port,
+            " ",
         ]
     )
     robot_description = {"robot_description": robot_description_content}

@@ -84,8 +84,11 @@ namespace zaber_driver {
     }
 
     info_ = info;
+
+    std::string com_port = info_.hardware_parameters["com_port"];
+
     
-    try { connection_ = zaber::motion::ascii::Connection::openSerialPort("/dev/ttyUSB0"); }
+    try { connection_ = zaber::motion::ascii::Connection::openSerialPort(com_port); }
     catch (const std::exception& exc) {
       RCLCPP_ERROR(rclcpp::get_logger("ZaberSystemHardwareInterface"), " zaber connection failed.");
       return hardware_interface::CallbackReturn::ERROR;
