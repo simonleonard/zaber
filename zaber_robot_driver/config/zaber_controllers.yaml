@@ -21,8 +21,8 @@ broyden_controller:
       - horizontal_joint
       - insertion_joint
       - vertical_joint
-    robot_base_link: world
-    end_effector_link: tip
+    reference_frame: zframe
+    target_frame: needle
     interface_name: velocity
 
 spacenav_controller:
@@ -35,8 +35,8 @@ spacenav_controller:
       - horizontal_joint
       - insertion_joint
       - vertical_joint
-    robot_base_link: world
-    end_effector_link: tip
+    robot_base_link: zframe
+    end_effector_link: needle
     interface_name: velocity
 
 velocity_controller:

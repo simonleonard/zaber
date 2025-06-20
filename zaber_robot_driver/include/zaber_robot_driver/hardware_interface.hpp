@@ -56,7 +56,8 @@ namespace zaber_driver{
     double lower_limit_;
     double upper_limit_;
     zaber::motion::ascii::Axis axis_;
-
+    std::mutex mutex;
+    
     constexpr static zaber::motion::Units kLenUnitM = zaber::motion::Units::LENGTH_METRES;
     constexpr static zaber::motion::Units kVelUnitMPS = zaber::motion::Units::VELOCITY_METRES_PER_SECOND;
     constexpr static zaber::motion::Units kAccelUnitMPS2 = zaber::motion::Units::ACCELERATION_METRES_PER_SECOND_SQUARED;

@@ -39,7 +39,7 @@ target_include_directories(
   PRIVATE
   include
   )
-target_link_libraries(zaber_driver_plugin zml)
+target_link_libraries(zaber_driver_plugin zaber-motion)
 ament_target_dependencies(
   zaber_driver_plugin
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
