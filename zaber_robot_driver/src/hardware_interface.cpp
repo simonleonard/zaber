@@ -73,7 +73,8 @@ namespace zaber_driver {
       return true;
     else{
       RCLCPP_INFO(rclcpp::get_logger("Axis"),
-		  "position '%f' is out of range: ['%f', '%f']",
+		  "%s position '%f' is out of range: ['%f', '%f']",
+		  name(),
 		  position,
 		  lower_limit_ - home_,
 		  upper_limit_ - home_);
@@ -108,14 +109,14 @@ namespace zaber_driver {
     
     try { connection_ = zaber::motion::ascii::Connection::openSerialPort(com_port); }
     catch (const std::exception& exc) {
-      RCLCPP_ERROR(rclcpp::get_logger("ZaberSystemHardwareInterface"), " zaber connection failed.");
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), " Zaber connection failed on port " << com_port );
       return hardware_interface::CallbackReturn::ERROR;
     }
 
-    devices_ = connection_.detectDevices();                                                                 
-    RCLCPP_INFO(rclcpp::get_logger("ZaberSystemHardwareInterface"), " %lu ", devices_.size(), " devices.");
+    devices_ = connection_.detectDevices();
+    RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), " " << devices_.size() << " devices." );
     if(devices_.size() != 3){
-      RCLCPP_ERROR(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Expected 3 devices, got  %lu ", devices_.size() );
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Expected 3 devices, got " << devices_.size() );
       return hardware_interface::CallbackReturn::ERROR;
     }
     
@@ -130,7 +131,7 @@ namespace zaber_driver {
 				 std::forward_as_tuple("insertion_joint"),
 				 std::forward_as_tuple("insertion_joint", kLsHome, kLsLowerLimit, kLsUpperLimit, devices_[0].getAxis(1)) );
 	if( ret.second ){
-	  std::cout << "sucess" << std::endl;
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured insertion axis");
 	}
       }
       else if( joint.name == "horizontal_joint" ){
@@ -138,7 +139,7 @@ namespace zaber_driver {
 				 std::forward_as_tuple("horizontal_joint"),
 				 std::forward_as_tuple("horizontal_joint", kTxHome, kTxLowerLimit, kTxUpperLimit, devices_[1].getAxis(1)) );
 	if( ret.second ){
-	  std::cout << "sucess" << std::endl;
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured horizontal axis");
 	}
       }
       else if( joint.name == "vertical_joint" ){
@@ -146,7 +147,7 @@ namespace zaber_driver {
 				 std::forward_as_tuple("vertical_joint"),
 				 std::forward_as_tuple("vertical_joint", kTzHome, kTzLowerLimit, kTzUpperLimit, devices_[2].getAxis(1)) );
 	if( ret.second ){
-	  std::cout << "sucess" << std::endl;
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured vertical axis");
 	}
       }
       else{
@@ -207,21 +208,21 @@ namespace zaber_driver {
   }
   
   hardware_interface::CallbackReturn
-  ZaberSystemHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous_state){
+  ZaberSystemHardwareInterface::on_activate(const rclcpp_lifecycle::State& /*previous_state*/){
     for (auto& pair : axes_)
       { pair.second.stop(); }
     return hardware_interface::CallbackReturn::SUCCESS;
   }
   
   hardware_interface::CallbackReturn
-  ZaberSystemHardwareInterface::on_deactivate(const rclcpp_lifecycle::State& previous_state){
+  ZaberSystemHardwareInterface::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/){
     for (auto& pair : axes_)
       { pair.second.stop(); }
     return hardware_interface::CallbackReturn::SUCCESS;
   }
 
   hardware_interface::CallbackReturn
-  ZaberSystemHardwareInterface::on_error(const rclcpp_lifecycle::State& previous_state){
+  ZaberSystemHardwareInterface::on_error(const rclcpp_lifecycle::State& /*previous_state*/){
     for (auto& pair : axes_)
       { pair.second.stop(); }
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -232,10 +233,10 @@ namespace zaber_driver {
   (const std::vector<std::string>& start_interfaces,
    const std::vector<std::string>& stop_interfaces){
     
-    std::cout << "ZaberSystemHardwareInterface::prepare_command_mode_switch" << std::endl;
+    RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Preparing to switch." );
     hardware_interface::return_type ret_val = hardware_interface::return_type::OK;
     for (const auto& key : start_interfaces){
-      std::cout << "start: " << key << std::endl;
+      RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Starting " << key );
       for (auto i = 0u; i < info_.joints.size(); i++) {
 	if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION) {
 	  cmd_mode_ = 1;
@@ -249,7 +250,7 @@ namespace zaber_driver {
     }
 
     for (const auto& key : stop_interfaces){
-      std::cout << "stop: " << key << std::endl;
+      RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Stopping " << key );
       for (auto i = 0u; i < info_.joints.size(); i++) {
 	if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION) {
 	  hw_commands_velocity_[i] = 0.0;
@@ -266,11 +267,11 @@ namespace zaber_driver {
   ZaberSystemHardwareInterface::perform_command_mode_switch
   (const std::vector<std::string>& start_interfaces,
    const std::vector<std::string>& stop_interfaces){
-
-    std::cout << "ZaberSystemHardwareInterface::perform_command_mode_switch" << std::endl;
+    
+    RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Switching mode." );
     hardware_interface::return_type ret_val = hardware_interface::return_type::OK;
     for (const auto& key : start_interfaces){
-      std::cout << "start: " << key << std::endl;
+      RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Starting " << key );
       for (auto i = 0u; i < info_.joints.size(); i++) {
 	if(key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION){	  
 	  for (auto& pair : axes_) pair.second.stop();
@@ -282,7 +283,7 @@ namespace zaber_driver {
     }
     
     for (const auto& key : stop_interfaces){
-      std::cout << "stop: " << key << std::endl;
+      RCLCPP_INFO_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Stopping " << key );
       for (auto i = 0u; i < info_.joints.size(); i++) {
 	if(key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION){
 	  for (auto& pair : axes_) pair.second.stop();
@@ -300,7 +301,7 @@ namespace zaber_driver {
 								      const rclcpp::Duration& /*period*/){
     for(std::size_t i=0; i<info_.joints.size(); i++ ){
       try{
-	
+	// All axis are flipped except Y (insertion)
 	hw_states_position_[i] = axes_.at(info_.joints[i].name).getPosition();
 	/*
 	zaber::motion::ascii::Warnings warnings = axes_.at(info_.joints[i].name).getWarnings();
@@ -308,7 +309,7 @@ namespace zaber_driver {
 	  std::cout << *w << std::endl;
 	*/
       }catch(const std::out_of_range& exception){
-	RCLCPP_ERROR(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Failed to access axis %s ", info_.joints[i].name );
+	RCLCPP_ERROR_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Failed to access axis " << info_.joints[i].name );
       }
       
     }
@@ -322,15 +323,13 @@ namespace zaber_driver {
       try{
 	if( cmd_mode_ == 1 ){
 	  axes_.at(info_.joints[i].name).moveAbs(hw_commands_position_[i], Axis::kDefaultVel, Axis::kDefaultAccel );
-	  //std::cout << hw_commands_position_[i] << std::setw(15);
 	}
 	if( cmd_mode_ == 2 ){
 	  axes_.at(info_.joints[i].name).sendVel(hw_commands_velocity_[i]);
-	  //std::cout << hw_commands_velocity_[i] << std::setw(15);
 	}
       }
       catch(const std::out_of_range& exception){
-	RCLCPP_ERROR(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Failed to access axis %s ", info_.joints[i].name );
+	RCLCPP_ERROR_STREAM( rclcpp::get_logger("ZaberSystemHardwareInterface"), "Failed to access axis " << info_.joints[i].name );
       }
     }
     //std::cout << std::endl;

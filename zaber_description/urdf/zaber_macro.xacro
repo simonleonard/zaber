@@ -50,20 +50,20 @@
       </collision>
     </link>
 
-    <joint name="insertion_joint" type="prismatic">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <parent link="base_link"/>
-      <child link="y_link"/>
-      <axis xyz="0.0 1.0 0.0"/>
-      <limit upper="0.1" lower="0.0" effort="100" velocity="100"/>
-    </joint>
-    
     <joint name="horizontal_joint" type="prismatic">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <parent link="base_link"/>
       <child link="x_link"/>
       <axis xyz="1.0 0.0 0.0"/>
       <limit upper="0.03" lower="-0.03" effort="100" velocity="100"/>
+    </joint>
+    
+    <joint name="insertion_joint" type="prismatic">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="y_link"/>
+      <axis xyz="0.0 1.0 0.0"/>
+      <limit upper="0.1" lower="0.0" effort="100" velocity="100"/>
     </joint>
     
     <joint name="vertical_joint" type="prismatic">

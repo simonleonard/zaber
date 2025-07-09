@@ -42,14 +42,14 @@ spacenav_controller:
 velocity_controller:
   ros__parameters:
     joints:
-      - insertion_joint
       - horizontal_joint
+      - insertion_joint
       - vertical_joint
     interface_name: velocity
 
 position_controller:
   ros__parameters:
     joints:
-      - insertion_joint
       - horizontal_joint
+      - insertion_joint
       - vertical_joint

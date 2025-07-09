@@ -108,17 +108,17 @@ namespace zaber_driver{
     std::vector<zaber::motion::ascii::Device> devices_;
     std::unordered_map<std::string, Axis> axes_;
 
-    constexpr static double kTxHome = 0.0;//125;
-    constexpr static double kTxLowerLimit = 0.00;
-    constexpr static double kTxUpperLimit = 0.025;
+    constexpr static double kTxHome = 0.0;;
+    constexpr static double kTxLowerLimit =  0.0;
+    constexpr static double kTxUpperLimit =  0.04;
 
     constexpr static double kLsHome = 0.0;
     constexpr static double kLsLowerLimit = 0.0;
     constexpr static double kLsUpperLimit = 0.1;
     
     constexpr static double kTzHome = 0.0;
-    constexpr static double kTzLowerLimit = 0.00;
-    constexpr static double kTzUpperLimit = 0.01;
+    constexpr static double kTzLowerLimit =  0.0;
+    constexpr static double kTzUpperLimit =  0.04;
 
   };
 }
