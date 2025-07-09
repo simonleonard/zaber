@@ -124,12 +124,21 @@ namespace zaber_driver {
     hw_commands_position_.resize(info_.joints.size(), 0.0);
     hw_commands_velocity_.resize(info_.joints.size(), 0.0);
 
-    for (const hardware_interface::ComponentInfo & joint : info_.joints){
-      
+    for( const hardware_interface::ComponentInfo& joint : info_.joints ){
+
+      double minpos=0.0, maxpos=0.0;
+
+      for( const hardware_interface::InterfaceInfo& cmd_interface : joint.command_interfaces ){
+	if( cmd_interface.name == "position" ){
+	  minpos = std::stod(cmd_interface.min);
+	  maxpos = std::stod(cmd_interface.max);
+	}
+      }
+	
       if( joint.name == "insertion_joint" ){
 	auto ret = axes_.emplace(std::piecewise_construct,
 				 std::forward_as_tuple("insertion_joint"),
-				 std::forward_as_tuple("insertion_joint", kLsHome, kLsLowerLimit, kLsUpperLimit, devices_[0].getAxis(1)) );
+				 std::forward_as_tuple("insertion_joint", kLsHome, minpos, maxpos, devices_[0].getAxis(1)) );
 	if( ret.second ){
 	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured insertion axis");
 	}
@@ -137,7 +146,7 @@ namespace zaber_driver {
       else if( joint.name == "horizontal_joint" ){
 	auto ret = axes_.emplace(std::piecewise_construct,
 				 std::forward_as_tuple("horizontal_joint"),
-				 std::forward_as_tuple("horizontal_joint", kTxHome, kTxLowerLimit, kTxUpperLimit, devices_[1].getAxis(1)) );
+				 std::forward_as_tuple("horizontal_joint", kTxHome, minpos, maxpos, devices_[1].getAxis(1)) );
 	if( ret.second ){
 	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured horizontal axis");
 	}
@@ -145,7 +154,7 @@ namespace zaber_driver {
       else if( joint.name == "vertical_joint" ){
 	auto ret = axes_.emplace(std::piecewise_construct,
 				 std::forward_as_tuple("vertical_joint"),
-				 std::forward_as_tuple("vertical_joint", kTzHome, kTzLowerLimit, kTzUpperLimit, devices_[2].getAxis(1)) );
+				 std::forward_as_tuple("vertical_joint", kTzHome, minpos, maxpos, devices_[2].getAxis(1)) );
 	if( ret.second ){
 	  RCLCPP_INFO_STREAM(rclcpp::get_logger("ZaberSystemHardwareInterface"), "Configured vertical axis");
 	}
